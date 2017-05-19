@@ -1,76 +1,120 @@
   <div class="panel panel-default">
   <!-- Standard-Panel-Inhalt -->
-  <div class="panel-heading">Repeater Info</div>
-  
+  <div class="panel-heading"><?php echo _("Repeater Info"); ?><span class="pull-right clickable"><i class="glyphicon glyphicon-chevron-up"></i></span></div>
+  <div class="panel-body">
   <!-- Tabelle -->
-  <table class="table">
+  <div class="table-responsive">
+  <table class="table repeaterinfo">
     <tr>
-      <th>Actual Mode</th>
-      <th>D-Star linked to</th>
-      <th>DMR TS1 last linked to</th>
-      <th>DMR TS2 last linked to</th>
+      <th><?php echo _("Current Mode"); ?></th>
+<?php
+   if (getEnabled("D-Star", $mmdvmconfigs) == 1) {
+?>
+      <th><?php echo _("D-Star linked to"); ?></th>
+<?php
+   }
+   if (getEnabled("System Fusion", $mmdvmconfigs) == 1) {
+?>
+      <th><?php echo _("YSF linked to"); ?></th>
+<?php
+   }
+   if (getEnabled("DMR", $mmdvmconfigs) == 1) {
+?>
+      <th><?php echo _("DMR TS1 last linked to"); ?></th>
+      <th><?php echo _("DMR TS2 last linked to"); ?></th>
+<?php
+   }
+?>
     </tr>
 <?php
-	echo"<tr>";
-	echo"<td>".getActualMode($lastHeard, $mmdvmconfigs)."</td>";
-	echo"<td>".getActualLink($logLines, "D-Star")."</td>";
-	echo"<td>".getActualLink($logLines, "DMR Slot 1")."</td>";
-	echo"<td>".getActualLink($logLines, "DMR Slot 2")."/". getActualReflector($logLines, "DMR Slot 2") ."</td>";
-	echo"</tr>\n";
+   echo"<tr>";
+   echo"<td id=\"mode\">".getActualMode($lastHeard, $mmdvmconfigs)."</td>";
+   if (getEnabled("D-Star", $mmdvmconfigs) == 1) {
+     echo"<td id=\"dstarlink\">".getActualLink($reverseLogLinesMMDVM, "D-Star")."</td>";
+   }
+   if (getEnabled("System Fusion", $mmdvmconfigs) == 1) {
+     echo"<td id=\"ysflink\">".getYSFReflectorById(getActualLink($reverseLogLinesYSFGateway, "YSF"), $activeYSFReflectors)."</td>";
+   }
+   if (getEnabled("DMR", $mmdvmconfigs) == 1) {
+     echo"<td id=\"dmr1link\">".getActualLink($reverseLogLinesMMDVM, "DMR Slot 1")."</td>";
+     echo"<td id=\"dmr2link\">".getActualLink($reverseLogLinesMMDVM, "DMR Slot 2")."/". getActualReflector($reverseLogLinesMMDVM, "DMR Slot 2") ."</td>";
+   }
+   echo"</tr>\n";
 ?>
     <tr>
-      <td colspan="4">
+      <td colspan="5">
         <table class="table">
           <tr>
-            <th>Location</th>
-            <th>TX-Freq.</th>
-            <th>Rx-Freq.</th>
+            <th><?php echo _("Location"); ?></th>
+            <th><?php echo _("TX-Freq."); ?></th>
+            <th><?php echo _("RX-Freq."); ?></th>
 <?php
-	if (getEnabled("DMR", $mmdvmconfigs) == 1) {
+   if (getEnabled("System Fusion Network", $mmdvmconfigs) == 1) {
 ?>
-            <th>DMR CC</th>
+            <th><?php echo _("YSFGateway"); ?></th>
 <?php
-		if (getEnabled("DMR Network", $mmdvmconfigs) == 1) {
+   }
+   if (getEnabled("DMR", $mmdvmconfigs) == 1) {
 ?>
-            <th>DMR-Master</th>
-	        <th>TS1</th>
-            <th>TS2</th>
+            <th><?php echo _("DMR CC"); ?></th>
 <?php
-		}
-	} 
+      if (getEnabled("DMR Network", $mmdvmconfigs) == 1) {
+?>
+            <th><?php echo _("DMR-Master"); ?></th>
+            <th><?php echo _("TS1"); ?></th>
+            <th><?php echo _("TS2"); ?></th>
+<?php
+      }
+   }
 ?>
           </tr>
 <?php
-	echo"<tr>";
-	echo"<td>".getConfigItem("Info", "Location", $mmdvmconfigs)."</td>";
-	echo"<td>".getMHZ(getConfigItem("Info", "TXFrequency", $mmdvmconfigs))."</td>";
-	echo"<td>".getMHZ(getConfigItem("Info", "RXFrequency", $mmdvmconfigs))."</td>";
-	if (getEnabled("DMR", $mmdvmconfigs) == 1) {
-		echo"<td>".getConfigItem("DMR", "ColorCode", $mmdvmconfigs)."</td>";
-		if (getEnabled("DMR Network", $mmdvmconfigs) == 1) {
-			echo"<td>".getConfigItem("DMR Network", "Address", $mmdvmconfigs)."</td>";
+   echo"<tr>";
+   echo"<td>".getConfigItem("Info", "Location", $mmdvmconfigs)."</td>";
+   echo"<td>".getMHZ(getConfigItem("Info", "TXFrequency", $mmdvmconfigs))."</td>";
+   echo"<td>".getMHZ(getConfigItem("Info", "RXFrequency", $mmdvmconfigs))."</td>";
+   if (getEnabled("System Fusion Network", $mmdvmconfigs) == 1) {
+      echo"<td>".getConfigItem("System Fusion Network", "GwyAddress", $mmdvmconfigs)."</td>";
+   }
+   if (getEnabled("DMR", $mmdvmconfigs) == 1) {
+      echo"<td>".getConfigItem("DMR", "ColorCode", $mmdvmconfigs)."</td>";
+      if (getEnabled("DMR Network", $mmdvmconfigs) == 1) {
+         echo"<td>";
+         if (getDMRMasterState()) {
+            echo "<span class=\"label label-success\" title=\"Master connected\">";
+         } else {
+            echo "<span class=\"label label-danger\" title=\"Master not connected\">";
+         }
+         echo getConfigItem("DMR Network", "Address", $mmdvmconfigs);
+         if (strlen(getDMRNetwork()) > 0 ) {
+            echo " (".getDMRNetwork().")";
+         }
 ?>
-            <td><span class="label <?php 
-			if (getConfigItem("DMR Network", "Slot1", $mmdvmconfigs) == 1) {
-		    	echo 'label-success">enabled';      
-			} else {
-		    	echo 'label-default">disabled';
-		    }
+         </span>
+         </td>
+            <td><span class="label <?php
+         if (getConfigItem("DMR Network", "Slot1", $mmdvmconfigs) == 1) {
+            echo 'label-success">'._("enabled");
+         } else {
+            echo 'label-default">'._("disabled");
+          }
     ?></span></td>
-            <td><span class="label <?php 
-			if (getConfigItem("DMR Network", "Slot2", $mmdvmconfigs) == 1) {
-		    	echo 'label-success">enabled';      
-			} else {
-		    	echo 'label-default">disabled';
-		    }
+            <td><span class="label <?php
+         if (getConfigItem("DMR Network", "Slot2", $mmdvmconfigs) == 1) {
+            echo 'label-success">'._("enabled");
+         } else {
+            echo 'label-default">'._("disabled");
+          }
     ?></span></td>
 <?php
-		}
-	}
+      }
+   }
 ?>
-		  </tr>
+        </tr>
         </table>
       </td>
     </tr>
   </table>
+  </div>
+  </div>
 </div>
